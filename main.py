@@ -7,6 +7,7 @@ from alpha_vantage.timeseries import TimeSeries
 from statsmodels.tsa.ar_model import AutoReg
 from dotenv import load_dotenv
 import os
+import time
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -20,12 +21,41 @@ api_key = os.getenv("API_KEY")
 # data = r.json()
 # print(data)
 
-# Using the Alpha Vantage API to get the historical data for SPY
+
+# fetch the data from the Alpha Vantage API, specifically the TimeSeries function
+# pandas is used to convert the data into a DataFrame
 ts = TimeSeries(key=api_key, output_format='pandas')
-# Using 'full' to get the entire historical set. 'compact' would only get the last 100 data points.
-spy_data, meta_data = ts.get_daily(symbol='SPY', outputsize='full')
 
+# Error handling for the API call
+max_attempts = 4  # Maximum number of attempts
+retry_delay = 60  # Delay in seconds between retries
 
+if not api_key:
+    st.error("API Key is missing. Please check your .env file.")
+    st.stop()
+
+for attempt in range(max_attempts):
+    try:
+        # Fetch the data from the Alpha Vantage API
+        spy_data, meta_data = ts.get_daily(symbol='SPY', outputsize='full')
+        break  # Exit the loop if the API call is successful
+    except ValueError:
+        # Handle invalid API key
+        st.error("Invalid API Key. Please check your .env file.")
+        st.stop()
+    except requests.exceptions.RequestException:
+        # Handle connection issues
+        st.error("Unable to connect to the Alpha Vantage API. Please try again later.")
+        st.stop()
+    except Exception as e:
+        # Handle rate limits or other unexpected errors
+        if attempt < max_attempts - 1:
+            st.warning(f"Rate limit exceeded or unexpected error: {e}. Retrying in {retry_delay} seconds...")
+            time.sleep(retry_delay)
+        else:
+            st.error(f"An unexpected error occurred: {e}. Please try again.")
+            st.stop()
+            
 # 'spy_data' is a pandas dataframe with columns
 # [1. open', '2. high', '3. low', '4. close', '5. volume']
 # since the data is in descending orfder we use sort_index to sort it in ascending order
@@ -146,7 +176,6 @@ ax3.legend()
 st.pyplot(fig3)
 
 
-# Explanation of Each Step
 st.markdown("""
 ### Explanation of each section of the code:
 
