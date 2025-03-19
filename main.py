@@ -185,34 +185,39 @@ st.markdown("""
 2. **Alpha Vantage API Setup**  
    We use the Python wrapper `alpha_vantage.timeseries.TimeSeries` to query daily stock data for SPY.
 
-3. **Data Sorting and Filtering**  
-   The returned DataFrame is sorted in descending order by default. We sort it in ascending order for convenience.
-   Then we convert the index to actual DateTime objects, which makes filtering and plotting simpler and easier.
+3. **Error Handling for API Calls**  
+   - Handles issues like:
+     - **Missing API Key**: Displays an error and stops the app.
+     - **Invalid API Key**: Catches `ValueError` and informs the user.
+     - **Connection Issues**: Catches network errors and displays a message.
+     - **Rate Limits**: Retries the API call up to `max_attempts` with a delay (`retry_delay`) and shows warnings. Stops the app if all retries fail.
+     
+4. **Data Sorting and Filtering**  
+   The returned DataFrame is sorted in descending order by default. We sort it in ascending order for convenience. Then we convert the index to actual DateTime objects, which makes filtering and plotting simpler and easier.
 
-4. **Streamlit Layout**  
+5. **Streamlit Layout**  
    - We set the page title(s) with `st.title()`.
    - We show a brief description with `st.write()` or `st.markdown()`.
 
-5. **Date Range Slider**  
+6. **Date Range Slider**  
    We extract the min and max year from our data and create a slider to let the user choose a start and end year. We then filter the DataFrame to only those years.
 
-6. **Data Preview**  
+7. **Data Preview**  
    We show a small preview of the filtered DataFrame using `st.write(filtered_data.head())`.
 
-7. **Initial Plot**  
+8. **Initial Plot**  
    We use `matplotlib.pyplot` to plot the closing prices (`4. close`) over the filtered date range, and display it with `st.pyplot()`.
 
-8. **Moving Average**  
+9. **Moving Average**  
    We add a user-selected window size slider and compute a rolling mean (`rolling(window=...).mean()`). We plot both the original closing price and the moving average on the same figure.
 
-9. **AutoRegressive Model**  
-   - We allow the user to choose the number of lags (`lag`) and the number of days to forecast. 
-   - We fit an AR model on our filtered data with `AutoReg`.
-   - We generate predictions for the next few days and plot them alongside the historical data.
+10. **AutoRegressive Model**  
+    - We allow the user to choose the number of lags (`lag`) and the number of days to forecast. 
+    - We fit an AR model on our filtered data with `AutoReg`.
+    - We generate predictions for the next few days and plot them alongside the historical data.
 
-10. **Final Visualization**  
+11. **Final Visualization**  
     Each figure is displayed with a separate `plt.subplots()` and `st.pyplot()` call. Streamlit automatically renders the figure.
-
 """)
 
 
